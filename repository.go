@@ -470,6 +470,7 @@ func PlainClone(path string, isBare bool, o *CloneOptions) (*Repository, error) 
 // TODO(mcuadros): move isBare to CloneOptions in v5
 // TODO(smola): refuse upfront to clone on a non-empty directory in v5, see #1027
 func PlainCloneContext(ctx context.Context, path string, isBare bool, o *CloneOptions) (*Repository, error) {
+	fmt.Println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 	cleanup, cleanupParent, err := checkIfCleanupIsNeeded(path)
 	if err != nil {
 		return nil, err
@@ -897,6 +898,7 @@ func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 	if _, err := r.CreateRemote(c); err != nil {
 		return err
 	}
+	fmt.Println("Created remote")
 
 	// When the repository to clone is on the local machine,
 	// instead of using hard links, automatically setup .git/objects/info/alternates
@@ -922,6 +924,7 @@ func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 		}
 	}
 
+	fmt.Println("Fetching and updating references")
 	ref, err := r.fetchAndUpdateReferences(ctx, &FetchOptions{
 		RefSpecs:        c.Fetch,
 		Depth:           o.Depth,
@@ -933,6 +936,7 @@ func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 		CABundle:        o.CABundle,
 		ProxyOptions:    o.ProxyOptions,
 	}, o.ReferenceName)
+	fmt.Println("Fetched and updated references")
 	if err != nil {
 		return err
 	}
@@ -971,11 +975,16 @@ func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 		}
 	}
 
+	fmt.Println("Updating remote config")
+
 	if err := r.updateRemoteConfigIfNeeded(o, c, ref); err != nil {
 		return err
 	}
 
+	fmt.Println("Updated remote config")
+
 	if !o.Mirror && ref.Name().IsBranch() {
+		fmt.Println("Doing some isbranch stuff")
 		branchRef := ref.Name()
 		branchName := strings.Split(string(branchRef), "refs/heads/")[1]
 
@@ -993,8 +1002,10 @@ func (r *Repository) clone(ctx context.Context, o *CloneOptions) error {
 		if err := r.CreateBranch(b); err != nil {
 			return err
 		}
+		fmt.Println("Did some isbranch stuff")
 	}
 
+	fmt.Println("Finished CLONE")
 	return nil
 }
 
